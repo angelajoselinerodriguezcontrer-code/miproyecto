@@ -1,0 +1,8 @@
+¿Qué es Pygame y cuál es su función?
+Se trata de un conjunto de módulos diseñados para Python que simplifica el desarrollo de videojuegos. Su principal ventaja es que nos ahorra la tarea de programar un motor gráfico desde el primer elemento. En su lugar, nos facilita la gestión de ventanas, elementos visuales, efectos de sonido y la interacción del usuario a través del teclado o el ratón.
+¿Qué relación tiene Pygame con los temas que estamos viendo en clase?
+• Ciclos (while): Son indispensables para crear el bucle principal del juego. Esto permite que el programa se ejecute de manera continua y se actualice fotograma tras fotograma, evitando que la aplicación se cierre de forma inesperada.
+• Eventos: Funcionan como un mecanismo para detectar y capturar cualquier acción del jugador en tiempo real, como pulsar una tecla, arrastrar el cursor o hacer clic en el botón de cerrar (pygame.event.get()).
+• Estructuras de datos y funciones: Nos ayudan a mantener el código ordenado y estructurado. Por ejemplo, empleamos listas o diccionarios para agrupar múltiples objetos (como los enemigos o las puntuaciones), y recurrimos a las funciones para aislar tareas específicas, como el cálculo de colisiones o el renderizado de gráficos.
+¿Qué implica que Pygame te permita "tomar mucho o poco" de su librería?
+Esta frase resalta la enorme flexibilidad de la herramienta. Significa que puedes programar un proyecto básico y abrir una ventana simple usando apenas unas cuantas líneas de código (tomar "poco"), o bien explotar todo su potencial para desarrollar videojuegos más robustos que requieran sistemas complejos de físicas, animaciones y detección de impactos (tomar "mucho").
