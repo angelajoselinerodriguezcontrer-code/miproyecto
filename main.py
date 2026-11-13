@@ -1,10 +1,10 @@
-import pygame 
+import pygame
 import sys
 import random
 
 # CONFIGURACIÓN E INICIALIZACIÓN
-
 pygame.init()
+pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
 # Dimensiones de la pantalla
 ANCHO = 800
@@ -22,6 +22,31 @@ AMARILLO = (255, 255, 0)
 ROJO = (255, 0, 0)
 BLANCO = (255, 255, 255)
 AZUL = (0, 0, 255)
+
+# Cargar Audio (Ruta corregida con 'Media' en mayúscula)
+try:
+    pygame.mixer.music.load("Media/Audio.mp3")
+    pygame.mixer.music.play(-1)
+    print("Música reproduciéndose...")
+except Exception as e:
+    print(f"No se pudo cargar el audio: {e}")
+
+# Cargar Imágenes de Fondo (Actualizado con img1, img2, img3)
+try:
+    imagenes = [
+        pygame.transform.scale(pygame.image.load("Media/img1.png"), (ANCHO, ALTO)),
+        pygame.transform.scale(pygame.image.load("Media/img2.png"), (ANCHO, ALTO)),
+        pygame.transform.scale(pygame.image.load("Media/img3.png"), (ANCHO, ALTO))
+    ]
+    print("¡Imágenes cargadas correctamente!")
+except Exception as e:
+    imagenes = []
+    print(f"Error al cargar las imágenes: {e}")
+
+# Variables de control de imágenes de fondo
+indice_imagen = 0
+tiempo_ultimo_cambio = pygame.time.get_ticks()
+INTERVALO_IMAGEN = 3000  # Cambia de imagen cada 3 segundos
 
 # VARIABLES DEL JUEGO
 
@@ -45,7 +70,7 @@ moneda_radio = 8
 # Puntuación y Estado del Juego
 puntuacion = 0
 juego_terminado = False
-fuente =pygame .font.SysFont("Arial", 30)
+fuente = pygame.font.SysFont("Arial", 30)
 
 # FUNCIONES AUXILIARES
 
@@ -57,6 +82,10 @@ def generar_monedas():
         x = random.randint(50, ANCHO - 50)
         y = random.randint(50, ALTO - 50)
         monedas.append([x, y])
+
+def enemigo_velocity_ajustada():
+    """Retorna la velocidad del enemigo asegurando que no sobrepase al jugador."""
+    return min(enemigo_velocidad, abs(enemigo_x - jugador_x))
 
 def mover_enemigo():
     """Lógica de IA simple: el enemigo persigue la posición del jugador."""
@@ -71,15 +100,11 @@ def mover_enemigo():
     elif enemigo_y > jugador_y:
         enemigo_y -= enemigo_velocity_ajustada()
 
-def enemigo_velocity_ajustada():
-    """Retorna la velocidad del enemigo asegurando que no sobrepase al jugador."""
-    return min(enemigo_velocidad, abs(enemigo_x - jugador_x))
-
 def verificar_colisiones():
     """Maneja las colisiones del jugador con las monedas y con el enemigo."""
     global puntuacion, juego_terminado, jugador_x, jugador_y
     
-    # 1. Colisión Jugador - Monedas (Distancia matemática entre círculos)
+    # 1. Colisión Jugador - Monedas
     for moneda in monedas[:]:
         distancia = ((jugador_x - moneda[0])**2 + (jugador_y - moneda[1])**2)**0.5
         if distancia < (jugador_radio + moneda_radio):
@@ -90,8 +115,7 @@ def verificar_colisiones():
     if len(monedas) == 0:
         generar_monedas()
 
-    # 2. Colisión Jugador - Enemigo (Círculo contra Cuadrado aproximado)
-    # Revisa si el centro del jugador entra en el área del cuadrado enemigo
+    # 2. Colisión Jugador - Enemigo
     if (enemigo_x < jugador_x < enemigo_x + enemigo_tamano) and \
        (enemigo_y < jugador_y < enemigo_y + enemigo_tamano):
         juego_terminado = True
@@ -100,7 +124,6 @@ def verificar_colisiones():
 generar_monedas()
 
 # CICLO PRINCIPAL DEL JUEGO (GAME LOOP)
-
 ejecutando = True
 while ejecutando:
     
@@ -126,18 +149,29 @@ while ejecutando:
         mover_enemigo()
         verificar_colisiones()
 
+        # Cambiar imagen de fondo automáticamente cada intervalo de tiempo
+        if imagenes:
+            tiempo_actual = pygame.time.get_ticks()
+            if tiempo_actual - tiempo_ultimo_cambio > INTERVALO_IMAGEN:
+                indice_imagen = (indice_imagen + 1) % len(imagenes)
+                tiempo_ultimo_cambio = tiempo_actual
+
     # --- 3. RENDERIZADO / DIBUJO ---
     pantalla.fill(NEGRO) # Limpiar pantalla con fondo negro
 
+    # Si hay imágenes cargadas, dibujamos la imagen de fondo actual
+    if imagenes:
+        pantalla.blit(imagenes[indice_imagen], (0, 0))
+
     if not juego_terminado:
-        # Dibujar Monedas (Puntos blancos)
+        # Dibujar Monedas
         for moneda in monedas:
             pygame.draw.circle(pantalla, BLANCO, (moneda[0], moneda[1]), moneda_radio)
 
-        # Dibujar Jugador (Pac-Man - Círculo Amarillo)
+        # Dibujar Jugador
         pygame.draw.circle(pantalla, AMARILLO, (jugador_x, jugador_y), jugador_radio)
 
-        # Dibujar Enemigo (Fantasma - Cuadrado Rojo)
+        # Dibujar Enemigo
         pygame.draw.rect(pantalla, ROJO, (enemigo_x, enemigo_y, enemigo_tamano, enemigo_tamano))
 
         # Dibujar Puntuación en pantalla
@@ -149,8 +183,8 @@ while ejecutando:
         texto_reiniciar = fuente.render(f"Puntuación final: {puntuacion} puntos.", True, BLANCO)
         
         # Centrar los textos en pantalla
-        pantalla.blit(texto_game_over, (ANCHO // 2 - 200, ALTO // 2 - 50))
-        pantalla.blit(texto_reiniciar, (ANCHO // 2 - 150, ALTO // 2 + 10))
+        pantalla.blit(texto_game_over, (ANCHO // 2 - 220, ALTO // 2 - 50))
+        pantalla.blit(texto_reiniciar, (ANCHO // 2 - 170, ALTO // 2 + 10))
 
     # Actualizar los gráficos en la ventana
     pygame.display.flip()
